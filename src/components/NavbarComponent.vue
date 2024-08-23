@@ -37,7 +37,7 @@ import logo from '@/assets/logo.png'
             <button class="btn btn-outline-success ml-2" type="submit">Search</button>
           </form>
         </li>
-        <div class="navbar-nav d-flex justify-content-between px-5 w-100 w-lg-50">
+        <div class="navbar-nav d-flex justify-content-between px-5 w-50 w-lg-50">
           <li class="nav-item active">
             <a class="nav-link" href="/about">About</a>
           </li>
@@ -74,3 +74,9 @@ import logo from '@/assets/logo.png'
     </div>
   </nav>
 </template>
+
+<style scoped>
+.navbar {
+  background-color: #eeffef !important;
+}
+</style>
