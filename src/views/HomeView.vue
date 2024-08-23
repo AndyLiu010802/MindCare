@@ -75,7 +75,7 @@
                   <button type="submit" class="btn btn-primary mx-3 my-2 btn-login">Login</button>
                 </div>
                 <p class="text-center">Don't have an account? <a href="/signup">Sign up</a></p>
-                <a href="#" class="text-center">Forgot password?</a>
+                <a @click="forgotPassword" class="text-center">Forgot password?</a>
               </form>
             </div>
           </div>
@@ -132,7 +132,7 @@ import ResourceCard from '@/assets/images/ResourceCard.png'
 import ConsultationCard from '@/assets/images/ConsultationCard.png'
 import logo from '@/assets/logo.png'
 import { ref } from 'vue'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/firebase'
 
 const email = ref('')
@@ -150,6 +150,15 @@ const login = async () => {
     } catch (error) {
       errorMessage.value = 'Incorrect email or password. Please try again.'
     }
+  }
+}
+
+// Implement forgot password functionality here
+const forgotPassword = async () => {
+  try {
+    await sendPasswordResetEmail(auth, email.value)
+  } catch (error) {
+    errorMessage.value = 'Failed to send password reset email. Please try again.'
   }
 }
 
@@ -184,6 +193,9 @@ const validatePassword = (blur) => {
 </script>
 
 <style scoped>
+a {
+  cursor: pointer;
+}
 .bg-container {
   position: relative;
   text-align: center;

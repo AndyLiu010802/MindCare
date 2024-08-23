@@ -1,5 +1,12 @@
 <script setup>
 import logo from '@/assets/logo.png'
+import { ref } from 'vue'
+
+const isNavCollapsed = ref(true)
+
+const toggleNavbar = () => {
+  isNavCollapsed.value = !isNavCollapsed.value
+}
 </script>
 
 <template>
@@ -15,8 +22,7 @@ import logo from '@/assets/logo.png'
     <button
       class="navbar-toggler"
       type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarSupportedContent"
+      @click="toggleNavbar"
       aria-controls="navbarSupportedContent"
       aria-expanded="false"
       aria-label="Toggle navigation"
@@ -24,7 +30,11 @@ import logo from '@/assets/logo.png'
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div
+      class="collapse navbar-collapse"
+      :class="{ show: !isNavCollapsed }"
+      id="navbarSupportedContent"
+    >
       <ul class="navbar-nav d-flex justify-content-between w-100">
         <li class="nav-item w-50 d-none d-lg-block">
           <form class="form-inline my-2 my-lg-0 d-flex">
@@ -45,24 +55,28 @@ import logo from '@/assets/logo.png'
             <a class="nav-link" href="/resources">Resources</a>
           </li>
           <li class="nav-item dropdown">
-            <!-- Dropdown with inside navigation -->
             <a
               class="nav-link dropdown-toggle"
-              id="navbarDropdown"
+              href="#"
+              id="dropdownMenuButton"
               role="button"
-              data-bs-toggle="dropdown"
+              data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
             >
               Consultation
             </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
               <a class="dropdown-item" href="/consultation">Therapists</a>
+              <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/chat">Chat</a>
+              <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/map">Map</a>
+              <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/appointment">Make An Appointment</a>
             </div>
           </li>
+
           <li class="nav-item">
             <a class="nav-link" href="/statistic">Data</a>
           </li>
@@ -78,5 +92,37 @@ import logo from '@/assets/logo.png'
 <style scoped>
 .navbar {
   background-color: #eeffef !important;
+}
+
+.dropdown-menu {
+  background-color: #eeffef !important;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 0;
+}
+
+.dropdown-item {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-item:hover {
+  background-color: #d4edda;
+  color: #000;
+}
+
+.nav-link,
+.dropdown-toggle {
+  color: #333 !important;
+}
+
+.nav-link:hover,
+.dropdown-toggle:hover {
+  color: #000 !important;
+}
+
+.dropdown-toggle::after {
+  margin-left: 0.25rem;
 }
 </style>
