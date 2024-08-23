@@ -65,9 +65,8 @@
                     class="form-control"
                     id="password"
                     placeholder="Enter your password"
-                    @blur="() => validatePassword(true)"
                   />
-                  <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
+
                   <div v-if="errorMessage" class="text-danger">{{ errorMessage }}</div>
                 </div>
 
@@ -138,18 +137,12 @@ import { auth } from '@/firebase'
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
-const errors = ref({
-  password: null
-})
 
 const login = async () => {
-  validatePassword(true)
-  if (!errors.value.password) {
-    try {
-      await signInWithEmailAndPassword(auth, email.value, password.value)
-    } catch (error) {
-      errorMessage.value = 'Incorrect email or password. Please try again.'
-    }
+  try {
+    await signInWithEmailAndPassword(auth, email.value, password.value)
+  } catch (error) {
+    errorMessage.value = 'Incorrect email or password. Please try again.'
   }
 }
 
@@ -166,29 +159,6 @@ const clearInput = () => {
   email.value = ''
   password.value = ''
   errorMessage.value = ''
-}
-
-const validatePassword = (blur) => {
-  const passwordValue = password.value
-  const minLength = 6
-  const hasUppercase = /[A-Z]/.test(passwordValue)
-  const hasLowercase = /[a-z]/.test(passwordValue)
-  const hasNumber = /\d/.test(passwordValue)
-  const hasSpecialChar = /[!@#$%^&*()_+[\]{};':"\\|,.<>/?]+/.test(passwordValue)
-
-  if (passwordValue.length < minLength) {
-    if (blur) errors.value.password = `Password must be at least ${minLength} characters long.`
-  } else if (!hasUppercase) {
-    if (blur) errors.value.password = 'Password must contain at least one uppercase letter.'
-  } else if (!hasLowercase) {
-    if (blur) errors.value.password = 'Password must contain at least one lowercase letter.'
-  } else if (!hasNumber) {
-    if (blur) errors.value.password = 'Password must contain at least one number.'
-  } else if (!hasSpecialChar) {
-    if (blur) errors.value.password = 'Password must contain at least one special character.'
-  } else {
-    errors.value.password = null
-  }
 }
 </script>
 
