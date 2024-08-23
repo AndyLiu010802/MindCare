@@ -1,5 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import AboutView from '../views/AboutView.vue'
+import ResourcesView from '../views/ResourcesView.vue'
+import ConsultationView from '../views/ConsultationView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import StatisticView from '../views/StatisticView.vue'
+import ChatView from '../views/ChatView.vue'
+import AppointmentView from '../views/AppointmentView.vue'
+import LibraryView from '../views/LibraryView.vue'
+import MapView from '../views/MapView.vue'
+import ResourceDetailsView from '../views/ResourceDetailsView.vue'
+import SignUpView from '../views/SignUpView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,10 +23,58 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
+      component: AboutView
+    },
+    {
+      path: '/resources',
+      name: 'resources',
+      component: ResourcesView
+    },
+    {
+      path: '/resources/:id',
+      name: 'resource-details',
+      component: ResourceDetailsView,
+      props: true
+    },
+    {
+      path: '/consultation',
+      name: 'consultation',
+      component: ConsultationView
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView
+    },
+    {
+      path: '/statistic',
+      name: 'statistic',
+      component: StatisticView
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: ChatView
+    },
+    {
+      path: '/appointment',
+      name: 'appointment',
+      component: AppointmentView
+    },
+    {
+      path: '/library',
+      name: 'library',
+      component: LibraryView
+    },
+    {
+      path: '/map',
+      name: 'map',
+      component: MapView
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: SignUpView
     }
   ]
 })
