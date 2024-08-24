@@ -82,6 +82,7 @@
         </div>
       </div>
     </div>
+    <FooterComponent />
   </div>
 </template>
 
@@ -93,6 +94,7 @@ import { ref } from 'vue'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/firebase'
 import axios from 'axios'
+import FooterComponent from '@/components/FooterComponent.vue'
 
 const router = useRouter()
 
@@ -209,6 +211,7 @@ const clearForm = () => {
   formData.value.accountType = 'normal'
 }
 
+// check if the license number is valid
 const checkLicense = async () => {
   if (!formData.value.license) {
     alert('Please enter a license number.')
@@ -288,7 +291,7 @@ const checkLicense = async () => {
 <style scoped>
 .body {
   height: 100vh;
-  width: 100%;
+  overflow: hidden;
   background-color: #2a412b;
 }
 .form-container {
@@ -311,7 +314,8 @@ const checkLicense = async () => {
   width: 70vh;
   height: auto;
   top: 20%;
-  left: 60%;
+  left: 20%;
+  display: block;
   position: absolute;
 }
 
@@ -319,6 +323,7 @@ const checkLicense = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .tooltip-icon {
@@ -351,5 +356,34 @@ const checkLicense = async () => {
 .tooltip-icon:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+@media (max-width: 768px) {
+  .ppl-img {
+    display: none;
+  }
+  h1 {
+    font-size: 2rem !important;
+  }
+  .sec-col {
+    display: none;
+  }
+  .container {
+    padding: 30px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+@media (max-width: 1199.8px) {
+  .body {
+    overflow-y: scroll;
+  }
+  .ppl-img {
+    width: 30vh;
+    left: 15%;
+  }
 }
 </style>
