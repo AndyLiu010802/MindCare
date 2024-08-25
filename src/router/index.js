@@ -15,67 +15,23 @@ import SignUpView from '../views/SignUpView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: AboutView
-    },
-    {
-      path: '/resources',
-      name: 'resources',
-      component: ResourcesView
-    },
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/about', name: 'about', component: AboutView },
+    { path: '/resources', name: 'resources', component: ResourcesView },
     {
       path: '/resources/:id',
       name: 'resource-details',
       component: ResourceDetailsView,
       props: true
     },
-    {
-      path: '/consultation',
-      name: 'consultation',
-      component: ConsultationView
-    },
-    {
-      path: '/profile',
-      name: 'profile',
-      component: ProfileView
-    },
-    {
-      path: '/statistic',
-      name: 'statistic',
-      component: StatisticView
-    },
-    {
-      path: '/chat',
-      name: 'chat',
-      component: ChatView
-    },
-    {
-      path: '/appointment',
-      name: 'appointment',
-      component: AppointmentView
-    },
-    {
-      path: '/library',
-      name: 'library',
-      component: LibraryView
-    },
-    {
-      path: '/map',
-      name: 'map',
-      component: MapView
-    },
-    {
-      path: '/signup',
-      name: 'signup',
-      component: SignUpView
-    }
+    { path: '/consultation', name: 'consultation', component: ConsultationView },
+    { path: '/profile', name: 'profile', component: ProfileView },
+    { path: '/statistic', name: 'statistic', component: StatisticView },
+    { path: '/chat', name: 'chat', component: ChatView },
+    { path: '/appointment', name: 'appointment', component: AppointmentView },
+    { path: '/library', name: 'library', component: LibraryView },
+    { path: '/map', name: 'map', component: MapView },
+    { path: '/signup', name: 'signup', component: SignUpView }
   ]
 })
 

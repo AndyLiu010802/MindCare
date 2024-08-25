@@ -4,8 +4,8 @@
     <div class="container">
       <div class="row">
         <div class="col form-container">
-          <h1 style="font-size: 3rem">Welcome to MindCare community</h1>
-          <form @submit.prevent="SignUp">
+          <h1 style="font-size: 3rem">Welcome to the MindCare community</h1>
+          <form @submit.prevent="submitForm">
             <div class="form-group">
               <label for="username">Username</label>
               <input
@@ -65,16 +65,14 @@
               </select>
               <div v-if="errors.accountType" class="text-danger">{{ errors.accountType }}</div>
             </div>
-            <div v-if="formData.accountType == 'support'" class="form-group">
+            <div v-if="formData.accountType === 'support'" class="form-group">
               <label for="license">
                 License
                 <span class="tooltip-icon" data-tooltip="Ahpra registration number">?</span>
               </label>
               <input type="text" class="form-control" id="license" v-model="formData.license" />
             </div>
-            <button type="submit" class="btn btn-primary my-4 btn-login" @click="submitForm">
-              Sign Up
-            </button>
+            <button type="submit" class="btn btn-primary my-4 btn-login">Sign Up</button>
           </form>
         </div>
         <div class="col sec-col">
@@ -87,14 +85,16 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import NavbarComponent from '@/components/NavbarComponent.vue'
-import SignUpImg from '@/assets/images/SignUpImg.png'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/firebase'
+import { doc, setDoc } from 'firebase/firestore'
 import axios from 'axios'
+import NavbarComponent from '@/components/NavbarComponent.vue'
 import FooterComponent from '@/components/FooterComponent.vue'
+import SignUpImg from '@/assets/images/SignUpImg.png'
+import { auth, db } from '@/firebase'
+import { authState } from '@/authState'
 
 const router = useRouter()
 
@@ -115,8 +115,9 @@ const errors = ref({
   accountType: null
 })
 
+// Validation functions
 const validateEmail = (blur) => {
-  if (formData.value.email === '') {
+  if (!formData.value.email) {
     if (blur) errors.value.email = 'Email cannot be empty'
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) {
     errors.value.email = 'Invalid email format'
@@ -149,7 +150,7 @@ const validatePassword = (blur) => {
 }
 
 const validateConfirmPassword = (blur) => {
-  if (formData.value.confirmPassword === '') {
+  if (!formData.value.confirmPassword) {
     if (blur) errors.value.confirmPassword = 'Confirm password cannot be empty'
   } else if (formData.value.password !== formData.value.confirmPassword) {
     if (blur) errors.value.confirmPassword = 'Passwords do not match'
@@ -159,7 +160,7 @@ const validateConfirmPassword = (blur) => {
 }
 
 const validateUsername = (blur) => {
-  if (formData.value.username === '') {
+  if (!formData.value.username) {
     if (blur) errors.value.username = 'Username cannot be empty'
   } else {
     errors.value.username = null
@@ -167,7 +168,7 @@ const validateUsername = (blur) => {
 }
 
 const validateAccountType = (blur) => {
-  if (formData.value.accountType === '') {
+  if (!formData.value.accountType) {
     if (blur) errors.value.accountType = 'Account type cannot be empty'
   } else {
     errors.value.accountType = null
@@ -188,17 +189,32 @@ const submitForm = async () => {
     !errors.value.username &&
     !errors.value.accountType
   ) {
-    if (formData.value.accountType === 'support') {
-      await checkLicense()
-    } else {
-      createUserWithEmailAndPassword(auth, formData.value.email, formData.value.password)
-        .then(() => {
-          clearForm()
-          router.push({ name: 'home' })
+    try {
+      if (formData.value.accountType === 'normal') {
+        // Create the user account
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.value.email,
+          formData.value.password
+        )
+        const user = userCredential.user
+        await setDoc(doc(db, 'Users', user.uid), {
+          username: formData.value.username,
+          email: formData.value.email,
+          accountType: formData.value.accountType
         })
-        .catch((error) => {
-          console.error('Error creating user:', error)
-        })
+
+        // Update authState and navigate to home
+        authState.user = user
+        authState.isAuthenticated = true
+
+        clearForm()
+        router.push({ name: 'home' })
+      } else {
+        await checkLicense()
+      }
+    } catch (error) {
+      console.error('Error creating user:', error)
     }
   }
 }
@@ -211,7 +227,7 @@ const clearForm = () => {
   formData.value.accountType = 'normal'
 }
 
-// check if the license number is valid
+// Check if the license number is valid
 const checkLicense = async () => {
   if (!formData.value.license) {
     alert('Please enter a license number.')
@@ -265,14 +281,22 @@ const checkLicense = async () => {
 
     if (profession.includes('Psychologist')) {
       if (expiryDate >= currentDate) {
-        createUserWithEmailAndPassword(auth, formData.value.email, formData.value.password)
-          .then(() => {
-            clearForm()
-            router.push({ name: 'home' })
-          })
-          .catch((error) => {
-            console.error('Error creating user:', error)
-          })
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.value.email,
+          formData.value.password
+        )
+        const user = userCredential.user
+        await setDoc(doc(db, 'Psychologists', user.uid), {
+          username: formData.value.username,
+          email: formData.value.email,
+          accountType: formData.value.accountType,
+          license: formData.value.license
+        })
+        authState.user = user
+        authState.isAuthenticated = true
+        clearForm()
+        router.push({ name: 'home' })
       } else {
         alert(
           'The license is valid and the profession is Psychologist, but the registration has expired.'

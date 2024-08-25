@@ -1,7 +1,111 @@
 <template>
-  <div>Profile</div>
+  <div class="body">
+    <NavbarComponent />
+    <div class="button-group">
+      <button
+        v-if="authState.isAuthenticated"
+        type="button"
+        class="btn btn-primary"
+        @click="logout"
+      >
+        Log out
+      </button>
+      <button
+        v-if="authState.isAuthenticated"
+        type="button"
+        class="btn btn-danger"
+        @click="deleteAccount"
+      >
+        Delete Account
+      </button>
+    </div>
+  </div>
 </template>
 
-<script></script>
+<script setup>
+import NavbarComponent from '@/components/NavbarComponent.vue'
+import { signOut, deleteUser } from 'firebase/auth'
+import { auth } from '@/firebase'
+import { useRouter } from 'vue-router'
+import { authState } from '@/authState'
 
-<style scoped></style>
+// Inject the global auth state
+const router = useRouter()
+
+// Logout function
+const logout = async () => {
+  try {
+    await signOut(auth)
+    authState.user = null
+    authState.isAuthenticated = false
+    console.log('User signed out successfully')
+    router.push({ name: 'home' }) // Redirect to home after logging out
+  } catch (error) {
+    console.error('Error signing out: ', error)
+  }
+}
+
+// Delete Account function
+const deleteAccount = async () => {
+  const user = auth.currentUser
+  if (user) {
+    try {
+      await deleteUser(user)
+      authState.user = null
+      authState.isAuthenticated = false
+      console.log('User account deleted successfully')
+      router.push({ name: 'home' }) // Redirect to home after account deletion
+    } catch (error) {
+      if (error.code === 'auth/requires-recent-login') {
+        console.error('Error deleting account: Requires recent login')
+        alert('Please log out and log back in, then try deleting your account again.')
+      } else {
+        console.error('Error deleting account: ', error)
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+</style>

@@ -4,6 +4,7 @@
     <div class="bg-container">
       <img :src="HomepageBg" alt="Homepage background" class="bg-image" />
       <button
+        v-if="!authState.isAuthenticated"
         type="button"
         class="btn-join btn btn-primary"
         data-toggle="modal"
@@ -133,6 +134,7 @@ import logo from '@/assets/logo.png'
 import { ref } from 'vue'
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/firebase'
+import { authState } from '@/authState'
 
 const email = ref('')
 const password = ref('')
@@ -140,13 +142,15 @@ const errorMessage = ref('')
 
 const login = async () => {
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value)
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
+    authState.user = userCredential.user
+    authState.isAuthenticated = true
+    console.log('User logged in:', authState.user)
   } catch (error) {
     errorMessage.value = 'Incorrect email or password. Please try again.'
   }
 }
 
-// Implement forgot password functionality here
 const forgotPassword = async () => {
   try {
     await sendPasswordResetEmail(auth, email.value)
