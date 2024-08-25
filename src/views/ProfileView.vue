@@ -1,6 +1,9 @@
 <template>
   <div class="body">
     <NavbarComponent />
+    <div>
+      {{ authState.accountType }}
+    </div>
     <div class="button-group">
       <button
         v-if="authState.isAuthenticated"
@@ -27,11 +30,10 @@ import NavbarComponent from '@/components/NavbarComponent.vue'
 import { signOut, deleteUser } from 'firebase/auth'
 import { auth } from '@/firebase'
 import { useRouter } from 'vue-router'
-import { authState } from '@/authState'
+import { authState } from '@/store'
 
 // Inject the global auth state
 const router = useRouter()
-
 // Logout function
 const logout = async () => {
   try {
@@ -54,7 +56,7 @@ const deleteAccount = async () => {
       authState.user = null
       authState.isAuthenticated = false
       console.log('User account deleted successfully')
-      router.push({ name: 'home' }) // Redirect to home after account deletion
+      router.push({ name: 'home' })
     } catch (error) {
       if (error.code === 'auth/requires-recent-login') {
         console.error('Error deleting account: Requires recent login')
@@ -68,13 +70,27 @@ const deleteAccount = async () => {
 </script>
 
 <style scoped>
-.body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f0f2f5;
+@media (min-width: 1200px) {
+  .body {
+    background-color: #2a412b;
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 1199.8px) {
+  .body {
+    background-color: #2a412b;
+    height: 100vh;
+    overflow-y: scroll;
+  }
+
+  .content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .button-group {

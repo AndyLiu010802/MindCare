@@ -70,12 +70,21 @@
 
                   <div v-if="errorMessage" class="text-danger">{{ errorMessage }}</div>
                 </div>
-
+                <div class="form-group">
+                  <label for="password" class="col-form-label d-flex justify-content-start"
+                    >Account Type:</label
+                  >
+                  <select class="form-control" id="accountType" v-model="accountType">
+                    <option value="normal">Normal User</option>
+                    <option value="support">Mental Health Support</option>
+                  </select>
+                </div>
                 <div class="form-group d-flex justify-content-center">
                   <button type="submit" class="btn btn-primary mx-3 my-2 btn-login">Login</button>
                 </div>
                 <p class="text-center">Don't have an account? <a href="/signup">Sign up</a></p>
                 <a @click="forgotPassword" class="text-center">Forgot password?</a>
+                <div v-if="emailMessage" class="text-success">{{ emailMessage }}</div>
               </form>
             </div>
           </div>
@@ -133,27 +142,45 @@ import ConsultationCard from '@/assets/images/ConsultationCard.png'
 import logo from '@/assets/logo.png'
 import { ref } from 'vue'
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { auth } from '@/firebase'
-import { authState } from '@/authState'
+import { auth, db } from '@/firebase'
+import { authState } from '@/store'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const accountType = ref('normal')
+const emailMessage = ref('')
 
 const login = async () => {
   try {
+    if (accountType.value === 'support') {
+      const q = query(collection(db, 'Psychologists'), where('email', '==', email.value))
+      const querySnapshot = await getDocs(q)
+
+      if (querySnapshot.empty) {
+        errorMessage.value =
+          'No psychologist found with this email. Please make sure your account is registered as a psychologist.'
+        return
+      }
+    }
+
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
     authState.user = userCredential.user
     authState.isAuthenticated = true
-    console.log('User logged in:', authState.user)
+    authState.accountType = accountType.value
+
+    console.log('User logged in:', authState.accountType)
+    window.location.reload()
   } catch (error) {
+    console.error('Login error:', error)
     errorMessage.value = 'Incorrect email or password. Please try again.'
   }
 }
-
 const forgotPassword = async () => {
   try {
     await sendPasswordResetEmail(auth, email.value)
+    emailMessage.value = 'Password reset email sent. Please check your inbox.'
   } catch (error) {
     errorMessage.value = 'Failed to send password reset email. Please try again.'
   }
@@ -162,6 +189,7 @@ const forgotPassword = async () => {
 const clearInput = () => {
   email.value = ''
   password.value = ''
+  accountType.value = 'normal'
   errorMessage.value = ''
 }
 </script>

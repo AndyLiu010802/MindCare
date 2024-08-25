@@ -72,6 +72,12 @@
               </label>
               <input type="text" class="form-control" id="license" v-model="formData.license" />
             </div>
+            <div v-if="isLoading" class="loading-overlay">
+              <div class="spinner-border text-light" role="status">
+                <span class="sr-only"></span>
+              </div>
+            </div>
+
             <button type="submit" class="btn btn-primary my-4 btn-login">Sign Up</button>
           </form>
         </div>
@@ -87,16 +93,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import axios from 'axios'
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import FooterComponent from '@/components/FooterComponent.vue'
 import SignUpImg from '@/assets/images/SignUpImg.png'
 import { auth, db } from '@/firebase'
-import { authState } from '@/authState'
+import { authState } from '@/store'
 
 const router = useRouter()
+const isLoading = ref(false)
 
 const formData = ref({
   username: '',
@@ -190,6 +197,14 @@ const submitForm = async () => {
     !errors.value.accountType
   ) {
     try {
+      isLoading.value = true
+
+      const signInMethods = await fetchSignInMethodsForEmail(auth, formData.value.email)
+      if (signInMethods.length > 0) {
+        alert('This email is already in use. Please use a different email.')
+        return
+      }
+
       if (formData.value.accountType === 'normal') {
         // Create the user account
         const userCredential = await createUserWithEmailAndPassword(
@@ -214,7 +229,9 @@ const submitForm = async () => {
         await checkLicense()
       }
     } catch (error) {
-      console.error('Error creating user:', error)
+      alert(`Email is already in use. Please use a different email.`)
+    } finally {
+      isLoading.value = false
     }
   }
 }
@@ -293,6 +310,13 @@ const checkLicense = async () => {
           accountType: formData.value.accountType,
           license: formData.value.license
         })
+
+        await setDoc(doc(db, 'Users', user.uid), {
+          username: formData.value.username,
+          email: formData.value.email,
+          accountType: 'normal'
+        })
+
         authState.user = user
         authState.isAuthenticated = true
         clearForm()
@@ -306,8 +330,9 @@ const checkLicense = async () => {
       alert('The profession associated with this license is not Psychologist.')
     }
   } catch (error) {
-    console.error('Error checking license:', error)
-    alert('There was an error validating the license. Please try again later.')
+    alert(
+      'There was an error validating the license. Make sure the license number is correct and email is valid.'
+    )
   }
 }
 </script>
@@ -409,5 +434,23 @@ const checkLicense = async () => {
     width: 30vh;
     left: 15%;
   }
+}
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3rem;
 }
 </style>

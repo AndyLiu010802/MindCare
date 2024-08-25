@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import { auth } from './firebase'
 import { onAuthStateChanged } from 'firebase/auth'
-import { authState } from './authState' // Import the authState module
+import { authState } from '@/store'
 
 // Add icons to the library
 library.add(faQuestionCircle)
