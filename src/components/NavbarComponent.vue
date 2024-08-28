@@ -1,11 +1,17 @@
 <script setup>
 import logo from '@/assets/logo.png'
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const isNavCollapsed = ref(true)
+const route = useRoute()
 
 const toggleNavbar = () => {
   isNavCollapsed.value = !isNavCollapsed.value
+}
+
+const isActive = (path) => {
+  return route.path === path ? 'active' : ''
 }
 </script>
 
@@ -48,11 +54,11 @@ const toggleNavbar = () => {
           </form>
         </li>
         <div class="navbar-nav d-flex justify-content-between px-5 w-50 w-lg-50">
-          <li class="nav-item active">
-            <a class="nav-link" href="/about">About</a>
+          <li class="nav-item">
+            <a :class="['nav-link', isActive('/about')]" href="/about">About</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/resources">Resources</a>
+            <a :class="['nav-link', isActive('/resources')]" href="/resources">Resources</a>
           </li>
           <li class="nav-item dropdown">
             <a
@@ -76,12 +82,11 @@ const toggleNavbar = () => {
               <a class="dropdown-item" href="/appointment">Make An Appointment</a>
             </div>
           </li>
-
           <li class="nav-item">
-            <a class="nav-link" href="/statistic">Data</a>
+            <a :class="['nav-link', isActive('/statistic')]" href="/statistic">Data</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/profile">Profile</a>
+            <a :class="['nav-link', isActive('/profile')]" href="/profile">Profile</a>
           </li>
         </div>
       </ul>
@@ -91,7 +96,7 @@ const toggleNavbar = () => {
 
 <style scoped>
 .navbar {
-  background-color: #eeffef !important;
+  background-color: #caeaff !important;
 }
 
 .dropdown-menu {
@@ -120,6 +125,12 @@ const toggleNavbar = () => {
 .nav-link:hover,
 .dropdown-toggle:hover {
   color: #000 !important;
+}
+
+.active {
+  text-decoration: underline;
+  font-weight: bold;
+  color: #2a412b !important;
 }
 
 .dropdown-toggle::after {

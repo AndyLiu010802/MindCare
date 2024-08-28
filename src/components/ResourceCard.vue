@@ -17,7 +17,7 @@
       </div>
 
       <div class="card-back" :style="{ boxShadow: props.boxShadow }">
-        <a :href="props.link">
+        <a>
           <h1 class="card-link" :style="{ color: props.color }">{{ props.navTitle }}</h1>
           <img :src="image" alt="Card image" class="card-img" />
         </a>
@@ -56,11 +56,6 @@ const props = defineProps({
     type: String,
     required: true,
     default: 'MindCare'
-  },
-  link: {
-    type: String,
-    required: true,
-    default: '/'
   },
   boxShadow: {
     type: String,
@@ -133,5 +128,6 @@ const props = defineProps({
   transform: translate(-50%, -50%);
   position: absolute;
   text-shadow: 2px 2px 4px rgba(118, 118, 118, 0.5);
+  cursor: pointer;
 }
 </style>

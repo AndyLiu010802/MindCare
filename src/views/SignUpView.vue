@@ -1,6 +1,7 @@
 <template>
   <div class="body">
-    <NavbarComponent />
+    <NavbarComponent class="sticky-top" />
+
     <div class="container">
       <div class="row">
         <div class="col form-container">

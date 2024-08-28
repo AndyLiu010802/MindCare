@@ -1,6 +1,7 @@
 <template>
   <div class="body">
-    <NavbarComponent />
+    <NavbarComponent class="sticky-top" />
+
     <div class="bg-container">
       <img :src="HomepageBg" alt="Homepage background" class="bg-image" />
       <button
@@ -254,7 +255,7 @@ a {
 
 @media (min-width: 1200px) {
   .body {
-    background-color: #2a412b;
+    background-color: #4b606f;
     height: 100vh;
     overflow: hidden;
   }
@@ -262,7 +263,7 @@ a {
 
 @media (max-width: 1199.8px) {
   .body {
-    background-color: #2a412b;
+    background-color: #2a3741;
     height: 100vh;
     overflow-y: scroll;
   }
