@@ -58,7 +58,7 @@ const navigateToResourceDetails = (title) => {
 
 const cards = [
   {
-    title: 'Addition',
+    title: 'Addiction',
     content:
       'A chronic condition characterized by the compulsive use of substances or engagement in behaviors despite harmful consequences. It often involves both physical and psychological dependence.',
     color: '#e74c3c',

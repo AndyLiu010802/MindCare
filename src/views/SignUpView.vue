@@ -342,7 +342,7 @@ const checkLicense = async () => {
 .body {
   height: 100vh;
   overflow: hidden;
-  background-color: #2a412b;
+  background-color: #5e91ce;
 }
 .form-container {
   margin-top: 4rem;
