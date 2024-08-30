@@ -223,7 +223,7 @@ const submitForm = async () => {
         // Update authState and navigate to home
         authState.user = user
         authState.isAuthenticated = true
-
+        authState.accountType = formData.value.accountType
         clearForm()
         router.push({ name: 'home' })
       } else {
@@ -320,6 +320,7 @@ const checkLicense = async () => {
 
         authState.user = user
         authState.isAuthenticated = true
+        authState.accountType = formData.value.accountType
         clearForm()
         router.push({ name: 'home' })
       } else {
