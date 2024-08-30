@@ -183,7 +183,7 @@ const cards = [
 .menu-container {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 70vh;
 }
 
 .link-container {
@@ -206,13 +206,13 @@ const cards = [
 
 .vertical-line {
   width: 1px;
-  height: 100%;
+  height: 88vh;
   background-color: #5e91ce;
   margin: 0 auto;
 }
 
 .card-bg {
-  height: 100vh;
+  height: 85vh;
   overflow-y: scroll !important;
   scroll-snap-type: proximity;
   scrollbar-width: thin;
