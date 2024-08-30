@@ -14,8 +14,7 @@
           <p>Loading...</p>
         </div>
         <div v-else>
-          <div v-if="explanation">
-            <p class="m-3">{{ explanation }}</p>
+          <div v-if="relatedLink">
             <div class="d-flex justify-content-between">
               <div class="sub-title">View the recommended website:</div>
               <button @click="fetchOtherLink" class="btn btn-primary btn-refresh">
@@ -25,7 +24,7 @@
             <a :href="relatedLink" class="mr-5" target="_blank">{{ relatedLink }}</a>
           </div>
           <div v-else>
-            <p>Could not load the explanation. Please try again later.</p>
+            <p>Could not load the website. Please try again later.</p>
           </div>
           <div class="divider"></div>
           <div
@@ -79,7 +78,6 @@ import StarRate from '@/components/StarRate.vue'
 
 const route = useRoute()
 const title = ref(route.params.title)
-const explanation = ref('')
 const relatedLink = ref('')
 const loading = ref(true)
 const router = useRouter()
@@ -122,7 +120,7 @@ const fetchGoogleSearchLink = async (query) => {
   const options = {
     method: 'GET',
     headers: {
-      'x-rapidapi-key': '433ff159abmshcda3627ace83f43p174269jsnc73fa007b9a6',
+      'x-rapidapi-key': '41a6fc23dcmsh243b757ae06a351p17d0fbjsn55ac9d37ee0a',
       'x-rapidapi-host': 'google-search74.p.rapidapi.com'
     }
   }
@@ -142,50 +140,6 @@ const fetchGoogleSearchLink = async (query) => {
   } catch (error) {
     console.error('Error fetching Google search link:', error)
     return null
-  }
-}
-
-const fetchExplanation = async (title) => {
-  const url = 'https://chatgpt-42.p.rapidapi.com/conversationgpt4-2'
-  const options = {
-    method: 'POST',
-    headers: {
-      'x-rapidapi-key': '433ff159abmshcda3627ace83f43p174269jsnc73fa007b9a6',
-      'x-rapidapi-host': 'chatgpt-42.p.rapidapi.com',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'user',
-          content: 'Can you explain what ' + title + ' is in mental health in proper way?'
-        }
-      ],
-      system_prompt: '',
-      temperature: 0.9,
-      top_k: 5,
-      top_p: 0.9,
-      max_tokens: 256,
-      web_access: false
-    })
-  }
-
-  try {
-    const response = await fetch(url, options)
-    const result = await response.json()
-    console.log('API Response JSON:', result)
-
-    if (result && result.status && result.result) {
-      explanation.value = result.result
-      relatedLink.value = await fetchGoogleSearchLink(title + ' mental health')
-    } else {
-      console.error('API returned an unexpected structure or empty response.')
-      console.error('Full API Response:', result)
-    }
-  } catch (error) {
-    console.error('Error fetching explanation:', error)
-  } finally {
-    loading.value = false
   }
 }
 
@@ -249,9 +203,10 @@ const onRatingSelected = (value) => {
 }
 
 onMounted(async () => {
-  await fetchExplanation(title.value)
+  relatedLink.value = await fetchGoogleSearchLink(title.value + ' mental health')
   userName.value = await getCurrentUserName()
   await fetchRatings()
+  loading.value = false
 })
 </script>
 
