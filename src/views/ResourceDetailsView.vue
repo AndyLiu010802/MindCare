@@ -80,6 +80,7 @@
               </div>
               <div>{{ rating.comment }}</div>
               <div class="text-secondary">{{ rating.date }}</div>
+              <div class="text-secondary">{{ rating.link }}</div>
               <div class="divider"></div>
             </div>
           </div>

@@ -8,6 +8,14 @@
           <h1 style="font-size: 3rem">Welcome to the MindCare community</h1>
           <form @submit.prevent="submitForm">
             <div class="form-group">
+              <div v-if="avatarPreview" class="avatar-preview">
+                <img :src="avatarPreview" alt="Avatar Preview" />
+              </div>
+              <label for="avatar">Profile Image</label>
+              <input type="file" class="form-control" id="avatar" @change="onFileChange" />
+              <div v-if="errors.avatar" class="text-danger">{{ errors.avatar }}</div>
+            </div>
+            <div class="form-group">
               <label for="username">Username</label>
               <input
                 type="text"
@@ -96,11 +104,12 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import axios from 'axios'
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import FooterComponent from '@/components/FooterComponent.vue'
 import SignUpImg from '@/assets/images/SignUpImg.png'
-import { auth, db } from '@/firebase'
+import { auth, db, storage } from '@/firebase'
 import { authState } from '@/store'
 
 const router = useRouter()
@@ -116,6 +125,7 @@ const formData = ref({
 })
 
 const errors = ref({
+  avatar: null,
   username: null,
   email: null,
   password: null,
@@ -123,7 +133,32 @@ const errors = ref({
   accountType: null
 })
 
+const selectedFile = ref(null)
+const avatarPreview = ref(null)
+
 // Validation functions
+const validateAvatar = (blur) => {
+  if (!selectedFile.value) {
+    if (blur) errors.value.avatar = 'Please select an Profile Image.'
+  } else if (!selectedFile.value.type.startsWith('image/')) {
+    errors.value.avatar = 'Please select a valid image file.'
+  } else {
+    errors.value.avatar = null
+  }
+}
+
+const onFileChange = (event) => {
+  selectedFile.value = event.target.files[0]
+  validateAvatar(true)
+
+  if (selectedFile.value) {
+    avatarPreview.value = URL.createObjectURL(selectedFile.value)
+  } else {
+    avatarPreview.value = null
+  }
+}
+
+// Existing validation functions
 const validateEmail = (blur) => {
   if (!formData.value.email) {
     if (blur) errors.value.email = 'Email cannot be empty'
@@ -184,6 +219,7 @@ const validateAccountType = (blur) => {
 }
 
 const submitForm = async () => {
+  validateAvatar(true)
   validateEmail(true)
   validatePassword(true)
   validateConfirmPassword(true)
@@ -191,6 +227,7 @@ const submitForm = async () => {
   validateAccountType(true)
 
   if (
+    !errors.value.avatar &&
     !errors.value.email &&
     !errors.value.password &&
     !errors.value.confirmPassword &&
@@ -214,10 +251,24 @@ const submitForm = async () => {
           formData.value.password
         )
         const user = userCredential.user
+
+        // Upload avatar image to Firebase Storage
+        let avatarUrl = null
+        if (selectedFile.value) {
+          const storageReference = storageRef(
+            storage,
+            `avatars/${user.uid}/${selectedFile.value.name}`
+          )
+          await uploadBytes(storageReference, selectedFile.value)
+          avatarUrl = await getDownloadURL(storageReference)
+        }
+
+        // Store user data in Firestore
         await setDoc(doc(db, 'Users', user.uid), {
           username: formData.value.username,
           email: formData.value.email,
-          accountType: formData.value.accountType
+          accountType: formData.value.accountType,
+          avatarUrl: avatarUrl
         })
 
         // Update authState and navigate to home
@@ -230,7 +281,7 @@ const submitForm = async () => {
         await checkLicense()
       }
     } catch (error) {
-      alert(`Email is already in use. Please use a different email.`)
+      alert('There was an error creating the account. Please try again.')
     } finally {
       isLoading.value = false
     }
@@ -243,6 +294,8 @@ const clearForm = () => {
   formData.value.password = ''
   formData.value.confirmPassword = ''
   formData.value.accountType = 'normal'
+  formData.value.license = ''
+  selectedFile.value = null
 }
 
 // Check if the license number is valid
@@ -257,8 +310,8 @@ const checkLicense = async () => {
       <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:ns="http://ns.ahpra.gov.au/pie/xsd/common/CommonCoreElements/2.0.0" xmlns:ns1="http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0" xmlns:ns2="http://ns.ahpra.gov.au/pie/xsd/frs/FindRegistrationMessages/2.0.0">
         <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
           <ns:LoginDetails>
-            <ns:UserId>piews-prod@amgen.org.au</ns:UserId>
-            <ns:Password>xC#36kF$4</ns:Password> 
+            <ns:UserId><!-- YOUR USER ID HERE --></ns:UserId>
+            <ns:Password><!-- YOUR PASSWORD HERE --></ns:Password> 
           </ns:LoginDetails>
           <wsa:Action>http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0/FindRegistrationPortType/FindRegistrationsRequest</wsa:Action>
           <wsa:To>https://ws2.ahpra.gov.au/pie/svc/PractitionerRegistrationSearch/2.0.0/FindRegistrationService.svc</wsa:To>
@@ -299,23 +352,40 @@ const checkLicense = async () => {
 
     if (profession.includes('Psychologist')) {
       if (expiryDate >= currentDate) {
+        // Create the user account
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           formData.value.email,
           formData.value.password
         )
         const user = userCredential.user
+
+        // Upload avatar image to Firebase Storage
+        let avatarUrl = null
+        if (selectedFile.value) {
+          const storageReference = storageRef(
+            storage,
+            `avatars/${user.uid}/${selectedFile.value.name}`
+          )
+          await uploadBytes(storageReference, selectedFile.value)
+          avatarUrl = await getDownloadURL(storageReference)
+        }
+
+        // Store data in 'Psychologists' collection
         await setDoc(doc(db, 'Psychologists', user.uid), {
           username: formData.value.username,
           email: formData.value.email,
           accountType: formData.value.accountType,
-          license: formData.value.license
+          license: formData.value.license,
+          avatarUrl: avatarUrl
         })
 
+        // Also store data in 'Users' collection
         await setDoc(doc(db, 'Users', user.uid), {
           username: formData.value.username,
           email: formData.value.email,
-          accountType: 'normal'
+          accountType: 'normal',
+          avatarUrl: avatarUrl
         })
 
         authState.user = user
@@ -335,6 +405,8 @@ const checkLicense = async () => {
     alert(
       'There was an error validating the license. Make sure the license number is correct and email is valid.'
     )
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -342,7 +414,7 @@ const checkLicense = async () => {
 <style scoped>
 .body {
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
   background-color: #5e91ce;
 }
 .form-container {
@@ -454,5 +526,17 @@ const checkLicense = async () => {
   width: 3rem;
   height: 3rem;
   border-width: 0.3rem;
+}
+
+.avatar-preview {
+  margin-top: 10px;
+}
+
+.avatar-preview img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
 }
 </style>

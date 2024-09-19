@@ -1,8 +1,11 @@
 <template>
   <div class="body">
     <NavbarComponent />
-    <div>
-      {{ authState.accountType }}
+    <div v-if="authState.isAuthenticated" class="container">
+      <div class="">
+        <p>Username: {{ username }}</p>
+        <p>Email: {{ email }}</p>
+      </div>
     </div>
     <div class="button-group">
       <button
@@ -29,25 +32,64 @@
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import { signOut, deleteUser } from 'firebase/auth'
 import { auth } from '@/firebase'
+import { getFirestore, doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router'
 import { authState } from '@/store'
+import { ref, onMounted } from 'vue'
 
-// Inject the global auth state
+// Initialize Firestore
+const db = getFirestore()
+
 const router = useRouter()
-// Logout function
+const username = ref('')
+const email = ref('')
+
+const getUserDoc = async () => {
+  if (authState.user) {
+    email.value = authState.user.email
+
+    if (authState.accountType === 'normal') {
+      const userDocRef = doc(db, 'Users', authState.user.uid)
+      try {
+        const userDocSnap = await getDoc(userDocRef)
+        if (userDocSnap.exists()) {
+          const data = userDocSnap.data()
+          username.value = data.username
+        } else {
+          console.error('User document does not exist!')
+        }
+      } catch (error) {
+        console.error('Error fetching user document:', error)
+      }
+    } else if (authState.accountType === 'support') {
+      const supDocRef = doc(db, 'Psychologists', authState.user.uid)
+      try {
+        const supDocSnap = await getDoc(supDocRef)
+        if (supDocSnap.exists()) {
+          const data = supDocSnap.data()
+          username.value = data.username
+        } else {
+          console.error('Psychologist document does not exist!')
+        }
+      } catch (error) {
+        console.error('Error fetching psychologist document:', error)
+      }
+    }
+  }
+}
+
 const logout = async () => {
   try {
     await signOut(auth)
     authState.user = null
     authState.isAuthenticated = false
     console.log('User signed out successfully')
-    router.push({ name: 'home' }) // Redirect to home after logging out
+    router.push({ name: 'home' })
   } catch (error) {
-    console.error('Error signing out: ', error)
+    console.error('Error signing out:', error)
   }
 }
 
-// Delete Account function
 const deleteAccount = async () => {
   const user = auth.currentUser
   if (user) {
@@ -62,11 +104,15 @@ const deleteAccount = async () => {
         console.error('Error deleting account: Requires recent login')
         alert('Please log out and log back in, then try deleting your account again.')
       } else {
-        console.error('Error deleting account: ', error)
+        console.error('Error deleting account:', error)
       }
     }
   }
 }
+
+onMounted(() => {
+  getUserDoc()
+})
 </script>
 
 <style scoped>
