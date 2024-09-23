@@ -34,6 +34,9 @@
             />
           </div>
         </div>
+        <div v-if="pageSection === 'library'" class="p-3">
+          <LibraryView />
+        </div>
       </div>
     </div>
   </div>
@@ -44,6 +47,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import CardComponent from '@/components/ResourceCard.vue'
+import LibraryView from './LibraryView.vue'
 
 const pageSection = ref('mental-health')
 const router = useRouter()

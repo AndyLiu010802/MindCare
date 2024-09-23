@@ -80,6 +80,15 @@
                     <option value="support">Mental Health Support</option>
                   </select>
                 </div>
+                <div class="form-group form-check d-flex my-3">
+                  <input
+                    type="checkbox"
+                    class="form-check-input me-2"
+                    id="rememberMe"
+                    v-model="rememberMe"
+                  />
+                  <label class="form-check-label" for="rememberMe">Remember Me</label>
+                </div>
                 <div class="form-group d-flex justify-content-center">
                   <button type="submit" class="btn btn-primary mx-3 my-2 btn-login">Login</button>
                 </div>
@@ -141,8 +150,14 @@ import AboutCard from '@/assets/images/AboutCard.png'
 import ResourceCard from '@/assets/images/ResourceCard.png'
 import ConsultationCard from '@/assets/images/ConsultationCard.png'
 import logo from '@/assets/logo.png'
-import { ref } from 'vue'
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
+import { ref, onMounted } from 'vue'
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
+} from 'firebase/auth'
 import { auth, db } from '@/firebase'
 import { authState } from '@/store'
 import { collection, query, where, getDocs } from 'firebase/firestore'
@@ -152,6 +167,7 @@ const password = ref('')
 const errorMessage = ref('')
 const accountType = ref('normal')
 const emailMessage = ref('')
+const rememberMe = ref(false)
 
 const login = async () => {
   try {
@@ -166,10 +182,23 @@ const login = async () => {
       }
     }
 
+    // Set the persistence based on the "Remember Me" checkbox
+    await setPersistence(
+      auth,
+      rememberMe.value ? browserLocalPersistence : browserSessionPersistence
+    )
+
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
     authState.user = userCredential.user
     authState.isAuthenticated = true
     authState.accountType = accountType.value
+
+    // Save the email if "Remember Me" is checked
+    if (rememberMe.value) {
+      localStorage.setItem('savedEmail', email.value)
+    } else {
+      localStorage.removeItem('savedEmail')
+    }
 
     console.log('User logged in:', authState.accountType)
     window.location.reload()
@@ -178,6 +207,7 @@ const login = async () => {
     errorMessage.value = 'Incorrect email or password. Please try again.'
   }
 }
+
 const forgotPassword = async () => {
   try {
     await sendPasswordResetEmail(auth, email.value)
@@ -192,7 +222,17 @@ const clearInput = () => {
   password.value = ''
   accountType.value = 'normal'
   errorMessage.value = ''
+  rememberMe.value = false
+  localStorage.removeItem('savedEmail')
 }
+
+onMounted(() => {
+  const savedEmail = localStorage.getItem('savedEmail')
+  if (savedEmail) {
+    email.value = savedEmail
+    rememberMe.value = true
+  }
+})
 </script>
 
 <style scoped>

@@ -5,7 +5,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Avatar</th>
+          <th></th>
           <th>Name</th>
           <th>Email</th>
           <th>Rating</th>
@@ -77,7 +77,7 @@ onMounted(() => {
 .body {
   height: 100vh;
   overflow-x: hidden;
-  background-color: #5e91ce;
+  background-color: antiquewhite;
 }
 
 @media (max-width: 768px) {

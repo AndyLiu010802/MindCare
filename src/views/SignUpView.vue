@@ -307,14 +307,23 @@ const checkLicense = async () => {
 
   try {
     const soapRequest = `
-      <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:ns="http://ns.ahpra.gov.au/pie/xsd/common/CommonCoreElements/2.0.0" xmlns:ns1="http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0" xmlns:ns2="http://ns.ahpra.gov.au/pie/xsd/frs/FindRegistrationMessages/2.0.0">
+      <soap:Envelope
+        xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+        xmlns:ns="http://ns.ahpra.gov.au/pie/xsd/common/CommonCoreElements/2.0.0"
+        xmlns:ns1="http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0"
+        xmlns:ns2="http://ns.ahpra.gov.au/pie/xsd/frs/FindRegistrationMessages/2.0.0"
+      >
         <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
           <ns:LoginDetails>
-            <ns:UserId><!-- YOUR USER ID HERE --></ns:UserId>
-            <ns:Password><!-- YOUR PASSWORD HERE --></ns:Password> 
+            <ns:UserId>piews-prod@amgen.org.au</ns:UserId>
+            <ns:Password>xC#36kF$4</ns:Password>
           </ns:LoginDetails>
-          <wsa:Action>http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0/FindRegistrationPortType/FindRegistrationsRequest</wsa:Action>
-          <wsa:To>https://ws2.ahpra.gov.au/pie/svc/PractitionerRegistrationSearch/2.0.0/FindRegistrationService.svc</wsa:To>
+          <wsa:Action>
+            http://ns.ahpra.gov.au/pie/svc/frs/FindRegistration/2.0.0/FindRegistrationPortType/FindRegistrationsRequest
+          </wsa:Action>
+          <wsa:To>
+            https://ws2.ahpra.gov.au/pie/svc/PractitionerRegistrationSearch/2.0.0/FindRegistrationService.svc
+          </wsa:To>
         </soap:Header>
         <soap:Body>
           <ns1:FindRegistrations>
