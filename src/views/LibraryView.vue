@@ -63,7 +63,7 @@
       </div>
 
       <div class="row align-items-stretch">
-        <div v-for="book in sortedBooks" :key="book.key" class="col-4 mb-4">
+        <div v-for="book in sortedBooks" :key="book.key" class="col-12 col-sm-6 col-md-4 mb-4">
           <div class="card h-100">
             <img
               :src="
@@ -166,5 +166,9 @@ const sortedBooks = computed(() => {
 
 * {
   font-weight: 500;
+}
+
+.nav-link {
+  cursor: pointer;
 }
 </style>

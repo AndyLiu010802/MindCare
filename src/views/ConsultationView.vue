@@ -2,45 +2,110 @@
   <div class="body">
     <NavbarComponent class="sticky-top" />
     <h1 class="text-center mt-5">Consultation Team</h1>
+
+    <div class="search-container">
+      <input type="text" v-model="searchTerm" placeholder="Search..." class="form-control" />
+    </div>
+
     <table class="table">
       <thead>
         <tr>
+          <th style="width: 50px"></th>
           <th></th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Rating</th>
+          <th style="width: 50px"></th>
+          <th @click="sortBy('username')">
+            Name
+            <span v-if="sortKey === 'username'">
+              <i v-if="sortOrder === 'asc'">▲</i>
+              <i v-else>▼</i>
+            </span>
+          </th>
+          <th style="width: 50px"></th>
+          <th class="email-vis">Email</th>
+          <th style="width: 50px"></th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="psychologist in psychologists" :key="psychologist.id">
+        <tr v-for="psychologist in paginatedPsychologists" :key="psychologist.id">
+          <td style="width: 50px"></td>
           <td>
             <img :src="psychologist.avatarUrl" alt="Avatar" class="avatar-img" />
           </td>
+          <td style="width: 50px"></td>
           <td>{{ psychologist.username }}</td>
-          <td>{{ psychologist.email }}</td>
-          <td>{{ psychologist.rating }}</td>
+          <td style="width: 50px"></td>
+          <td class="email-vis">{{ psychologist.email }}</td>
+
+          <td style="width: 550px"></td>
+
           <td>
-            <button class="btn btn-primary" @click="makeAppointment(psychologist)">
+            <button class="btn btn-primary btn-blue" @click="openCalendar(psychologist)">
               Make an Appointment
             </button>
-            <button class="btn btn-secondary" @click="sendEmail(psychologist.email)">
+            <button class="btn btn-secondary btn-green" @click="sendEmail(psychologist.email)">
               Send Email
             </button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination">
+      <button :disabled="currentPage === 1" @click="prevPage">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button :disabled="currentPage === totalPages" @click="nextPage">Next</button>
+    </div>
+
+    <div v-if="showCalendar" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closeCalendar">&times;</span>
+        <FullCalendar :options="calendarOptions" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { collection, getDocs } from 'firebase/firestore'
+import { ref, computed, onMounted } from 'vue'
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  Timestamp
+} from 'firebase/firestore'
 import { db } from '@/firebase'
 import NavbarComponent from '@/components/NavbarComponent.vue'
+import FullCalendar from '@fullcalendar/vue3'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
 
 const psychologists = ref([])
+const searchTerm = ref('')
+const sortKey = ref('username')
+const sortOrder = ref('asc')
+const currentPage = ref(1)
+const pageItems = 10
+
+const showCalendar = ref(false)
+const selectedPsychologist = ref(null)
+const calendarOptions = ref({
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  initialView: 'timeGridWeek',
+  weekends: true,
+  events: [],
+  selectable: true,
+  select: handleSelect,
+  slotDuration: '01:00:00',
+  slotLabelInterval: '01:00',
+  slotMinTime: '08:00:00',
+  slotMaxTime: '18:00:00'
+})
 
 const fetchPsychologists = async () => {
   try {
@@ -54,12 +119,188 @@ const fetchPsychologists = async () => {
   }
 }
 
-const makeAppointment = (psychologist) => {
-  console.log('Making appointment with:', psychologist.name)
+const openCalendar = async (psychologist) => {
+  selectedPsychologist.value = psychologist
+  showCalendar.value = true
+  await fetchAppointments()
+}
+
+const closeCalendar = () => {
+  showCalendar.value = false
+  calendarOptions.value.events = []
+}
+
+const fetchAppointments = async () => {
+  if (!selectedPsychologist.value) return
+  const psychologistUid = selectedPsychologist.value.id
+  const docRef = doc(db, 'consultation', psychologistUid)
+
+  let appointments = []
+
+  try {
+    const docSnap = await getDoc(docRef)
+
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      appointments = data.appointments || []
+    } else {
+      // set appointments to empty array if the document doesn't exist
+      await setDoc(docRef, { appointments: [] })
+    }
+
+    calendarOptions.value.events = appointments
+      .map((appointment) => {
+        if (appointment && appointment.start && appointment.end) {
+          return {
+            title: 'Booked',
+            start: appointment.start.toDate(),
+            end: appointment.end.toDate(),
+            allDay: false
+          }
+        } else if (appointment && appointment.toDate) {
+          const start = appointment.toDate()
+          const end = new Date(start.getTime() + 60 * 60 * 1000)
+          return {
+            title: 'Booked',
+            start: start,
+            end: end,
+            allDay: false
+          }
+        } else {
+          // Invalid appointment data
+          console.error('Invalid appointment data:', appointment)
+          return null
+        }
+      })
+      .filter((event) => event !== null)
+  } catch (error) {
+    console.error('Error fetching appointments:', error)
+  }
+}
+
+async function handleSelect(selectionInfo) {
+  if (!selectedPsychologist.value) return
+
+  const startDate = selectionInfo.start
+  const endDate = selectionInfo.end
+
+  const psychologistUid = selectedPsychologist.value.id
+  const docRef = doc(db, 'consultation', psychologistUid)
+
+  try {
+    const docSnap = await getDoc(docRef)
+    let appointments = []
+
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      appointments = data.appointments || []
+    } else {
+      // set appointments to empty array if the document doesn't exist
+      await setDoc(docRef, { appointments: [] })
+    }
+
+    // check conflicting appointments
+    const isOverlapping = appointments.some((appointment) => {
+      let appointmentStart, appointmentEnd
+
+      if (appointment.start && appointment.end) {
+        appointmentStart = appointment.start.toDate()
+        appointmentEnd = appointment.end.toDate()
+      } else if (appointment.toDate) {
+        appointmentStart = appointment.toDate()
+        appointmentEnd = new Date(appointmentStart.getTime() + 60 * 60 * 1000)
+      } else {
+        return false
+      }
+
+      return (
+        (startDate >= appointmentStart && startDate < appointmentEnd) ||
+        (endDate > appointmentStart && endDate <= appointmentEnd) ||
+        (startDate <= appointmentStart && endDate >= appointmentEnd)
+      )
+    })
+
+    if (isOverlapping) {
+      alert('This time slot overlaps with an existing appointment. Please choose another time.')
+    } else {
+      const newAppointment = {
+        start: Timestamp.fromDate(startDate),
+        end: Timestamp.fromDate(endDate)
+      }
+
+      await updateDoc(docRef, {
+        appointments: arrayUnion(newAppointment)
+      })
+
+      calendarOptions.value.events.push({
+        title: 'Booked',
+        start: startDate,
+        end: endDate,
+        allDay: false
+      })
+
+      alert('Appointment booked successfully!')
+    }
+  } catch (error) {
+    console.error('Error handling appointment:', error)
+    alert('An error occurred while booking the appointment. Please try again.')
+  }
 }
 
 const sendEmail = (email) => {
   window.location.href = `mailto:${email}`
+}
+
+const filteredPsychologists = computed(() => {
+  if (!searchTerm.value) {
+    return psychologists.value
+  }
+  return psychologists.value.filter((psychologist) => {
+    return psychologist.username.toLowerCase().includes(searchTerm.value.toLowerCase())
+  })
+})
+
+const sortedPsychologists = computed(() => {
+  const psychologistsToSort = filteredPsychologists.value.slice()
+  psychologistsToSort.sort((a, b) => {
+    let modifier = 1
+    if (sortOrder.value === 'desc') modifier = -1
+    if (a[sortKey.value] < b[sortKey.value]) return -1 * modifier
+    if (a[sortKey.value] > b[sortKey.value]) return 1 * modifier
+    return 0
+  })
+  return psychologistsToSort
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(sortedPsychologists.value.length / pageItems)
+})
+
+const paginatedPsychologists = computed(() => {
+  const start = (currentPage.value - 1) * pageItems
+  const end = start + pageItems
+  return sortedPsychologists.value.slice(start, end)
+})
+
+const sortBy = (key) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortOrder.value = 'asc'
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
 }
 
 onMounted(() => {
@@ -80,6 +321,49 @@ onMounted(() => {
   background-color: antiquewhite;
 }
 
+.search-container {
+  margin-bottom: 15px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination button {
+  margin: 0 5px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  position: relative;
+  width: 80%;
+  max-width: 800px;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
   h1 {
     font-size: 2rem !important;
@@ -88,7 +372,23 @@ onMounted(() => {
   .container {
     padding: 30px;
   }
+
+  .btn {
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 40px;
+    margin: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(61, 61, 61, 0.1);
+  }
+
+  .email-vis {
+    display: none;
+  }
 }
+
 @media (max-width: 1199.8px) {
   .body {
     overflow-y: scroll;
@@ -96,13 +396,21 @@ onMounted(() => {
 }
 
 .btn {
-  background: linear-gradient(to top, #072209, #0e3c1e, #1c6638);
   color: #fff;
   border: none;
   border-radius: 50px;
   padding: 10px 40px;
+  margin: 5px;
   font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgb(61, 61, 61, 0.1);
+  box-shadow: 0 4px 8px rgba(61, 61, 61, 0.1);
+}
+
+.btn-blue {
+  background: cornflowerblue;
+}
+
+.btn-green {
+  background: lightseagreen;
 }
 </style>
