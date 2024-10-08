@@ -58,7 +58,7 @@
     </div>
 
     <div v-if="showCalendar" class="modal">
-      <div class="modal-content">
+      <div class="modal-content p-5">
         <span class="close" @click="closeCalendar">&times;</span>
         <FullCalendar :options="calendarOptions" />
       </div>
@@ -94,6 +94,9 @@ const pageItems = 10
 
 const showCalendar = ref(false)
 const selectedPsychologist = ref(null)
+
+const now = new Date()
+
 const calendarOptions = ref({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
   initialView: 'timeGridWeek',
@@ -104,7 +107,14 @@ const calendarOptions = ref({
   slotDuration: '01:00:00',
   slotLabelInterval: '01:00',
   slotMinTime: '08:00:00',
-  slotMaxTime: '18:00:00'
+  slotMaxTime: '18:00:00',
+  allDaySlot: false,
+  validRange: {
+    start: now
+  },
+  selectAllow: function (selectInfo) {
+    return selectInfo.start >= now
+  }
 })
 
 const fetchPsychologists = async () => {
@@ -144,7 +154,6 @@ const fetchAppointments = async () => {
       const data = docSnap.data()
       appointments = data.appointments || []
     } else {
-      // set appointments to empty array if the document doesn't exist
       await setDoc(docRef, { appointments: [] })
     }
 
@@ -167,7 +176,6 @@ const fetchAppointments = async () => {
             allDay: false
           }
         } else {
-          // Invalid appointment data
           console.error('Invalid appointment data:', appointment)
           return null
         }
@@ -184,6 +192,11 @@ async function handleSelect(selectionInfo) {
   const startDate = selectionInfo.start
   const endDate = selectionInfo.end
 
+  if (startDate < now) {
+    alert('Cannot select a past time.')
+    return
+  }
+
   const psychologistUid = selectedPsychologist.value.id
   const docRef = doc(db, 'consultation', psychologistUid)
 
@@ -195,11 +208,9 @@ async function handleSelect(selectionInfo) {
       const data = docSnap.data()
       appointments = data.appointments || []
     } else {
-      // set appointments to empty array if the document doesn't exist
       await setDoc(docRef, { appointments: [] })
     }
 
-    // check conflicting appointments
     const isOverlapping = appointments.some((appointment) => {
       let appointmentStart, appointmentEnd
 
