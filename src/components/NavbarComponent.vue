@@ -74,12 +74,9 @@ const isActive = (path) => {
             </a>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
               <a class="dropdown-item" href="/consultation">Therapists</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/chat">Chat</a>
+
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/map">Map</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/appointment">Make An Appointment</a>
             </div>
           </li>
           <li class="nav-item">

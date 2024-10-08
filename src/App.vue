@@ -1,9 +1,20 @@
 <script setup></script>
 
 <template>
-  <div style="background-color: red; width: 100%; height: 20hv">
-    <p v-if="isOnline">You are online!</p>
-    <p v-else>You are offline!</p>
+  <div
+    v-if="isOffline"
+    style="
+      background-color: red;
+      opacity: 0.6;
+      width: 100%;
+      height: 20hv;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+    "
+  >
+    <p>You are offline!</p>
   </div>
   <router-view></router-view>
 </template>
@@ -12,7 +23,7 @@
 export default {
   data() {
     return {
-      isOnline: navigator.onLine
+      isOffline: !navigator.onLine
     }
   },
   created() {
@@ -25,7 +36,7 @@ export default {
   },
   methods: {
     updateOnlineStatus() {
-      this.isOnline = navigator.onLine
+      this.isOffline = !navigator.onLine
     }
   }
 }

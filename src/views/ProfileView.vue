@@ -1,48 +1,57 @@
 <template>
   <div class="body">
     <NavbarComponent />
-    <div v-if="authState.isAuthenticated" class="container">
-      <div class="">
-        <p>Username: {{ username }}</p>
-        <p>Email: {{ email }}</p>
+    <div class="outer-container" style="display: flex">
+      <div class="personal-info">
+        <div v-if="authState.isAuthenticated" class="container">
+          <div>
+            <img class="avatar-image" :src="avatarPreview" alt="Avatar Preview" />
+
+            <p>Username: {{ username }}</p>
+            <p>Email: {{ email }}</p>
+            <p>Account Type: {{ authState.accountType }}</p>
+          </div>
+        </div>
+        <div class="button-group">
+          <button
+            v-if="authState.isAuthenticated"
+            type="button"
+            class="btn btn-primary"
+            @click="logout"
+          >
+            Log out
+          </button>
+          <button
+            v-if="authState.isAuthenticated"
+            type="button"
+            class="btn btn-danger"
+            @click="deleteAccount"
+          >
+            Delete Account
+          </button>
+        </div>
       </div>
     </div>
-    <div class="button-group">
-      <button
-        v-if="authState.isAuthenticated"
-        type="button"
-        class="btn btn-primary"
-        @click="logout"
-      >
-        Log out
-      </button>
-      <button
-        v-if="authState.isAuthenticated"
-        type="button"
-        class="btn btn-danger"
-        @click="deleteAccount"
-      >
-        Delete Account
-      </button>
+    <div style="position: relative; top: 20%">
+      <FooterComponent />
     </div>
   </div>
 </template>
 
 <script setup>
+import FooterComponent from '@/components/FooterComponent.vue'
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import { signOut, deleteUser } from 'firebase/auth'
-import { auth } from '@/firebase'
-import { getFirestore, doc, getDoc } from 'firebase/firestore'
+import { auth, db } from '@/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router'
 import { authState } from '@/store'
 import { ref, onMounted } from 'vue'
 
-// Initialize Firestore
-const db = getFirestore()
-
 const router = useRouter()
 const username = ref('')
 const email = ref('')
+const avatarPreview = ref('')
 
 const getUserDoc = async () => {
   if (authState.user) {
@@ -54,7 +63,8 @@ const getUserDoc = async () => {
         const userDocSnap = await getDoc(userDocRef)
         if (userDocSnap.exists()) {
           const data = userDocSnap.data()
-          username.value = data.username
+          username.value = data.username || 'Anonymous'
+          avatarPreview.value = data.avatarUrl || ''
         } else {
           console.error('User document does not exist!')
         }
@@ -67,7 +77,8 @@ const getUserDoc = async () => {
         const supDocSnap = await getDoc(supDocRef)
         if (supDocSnap.exists()) {
           const data = supDocSnap.data()
-          username.value = data.username
+          username.value = data.username || 'Anonymous'
+          avatarPreview.value = data.avatarUrl || ''
         } else {
           console.error('Psychologist document does not exist!')
         }
@@ -118,7 +129,7 @@ onMounted(() => {
 <style scoped>
 @media (min-width: 1200px) {
   .body {
-    background-color: #2a412b;
+    background-color: antiquewhite;
     height: 100vh;
     overflow: hidden;
   }
@@ -126,7 +137,7 @@ onMounted(() => {
 
 @media (max-width: 1199.8px) {
   .body {
-    background-color: #2a412b;
+    background-color: antiquewhite;
     height: 100vh;
     overflow-y: scroll;
   }
@@ -139,9 +150,16 @@ onMounted(() => {
   }
 }
 
+.container {
+  padding-top: 50px;
+  padding-left: 30px;
+}
 .button-group {
+  position: relative;
   display: flex;
   gap: 10px;
+  padding-left: 30px;
+  top: 35%;
 }
 
 .btn {
@@ -169,5 +187,19 @@ onMounted(() => {
 
 .btn-danger:hover {
   background-color: #c82333;
+}
+
+p {
+  font-size: 1.5rem;
+}
+
+.avatar-image {
+  width: 180px;
+  height: 180px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+  margin-bottom: 20px;
 }
 </style>
