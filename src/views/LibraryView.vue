@@ -158,6 +158,7 @@ const sortedBooks = computed(() => {
 })
 </script>
 <style scoped>
+
 .card-img-top {
   height: 200px;
   width: 100%;

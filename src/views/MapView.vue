@@ -82,4 +82,6 @@ function initializeGeocoder() {
 .mapboxgl-ctrl-geocoder {
   min-width: 300px;
 }
+
+
 </style>

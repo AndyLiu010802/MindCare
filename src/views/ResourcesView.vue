@@ -182,6 +182,7 @@ const cards = [
 .body {
   height: 100vh;
   background-color: antiquewhite;
+  overflow-x: hidden;
 }
 
 .menu-container {
@@ -232,6 +233,11 @@ const cards = [
 @media (max-width: 1199.8px) {
   .link-container {
     font-size: 1.2rem;
+  }
+
+  .body {
+    overflow-x: hidden;
+    overflow-y: scroll;
   }
 
   .card-grid {

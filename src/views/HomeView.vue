@@ -305,6 +305,7 @@ a {
   .body {
     background-color: #2a3741;
     height: 100vh;
+    overflow-x: hidden;
     overflow-y: scroll;
   }
 
