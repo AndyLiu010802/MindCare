@@ -20,7 +20,7 @@ export default defineConfig({
       }
     }
   },
-  // Add the build configuration
+  // Add the build configuration here
   build: {
     outDir: 'dist', 
     emptyOutDir: true 
