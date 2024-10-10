@@ -1,18 +1,20 @@
 <script setup>
-import logo from '@/assets/logo.png'
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import logo from "@/assets/logo.png";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
+import { authState } from "@/store";
 
-const isNavCollapsed = ref(true)
-const route = useRoute()
+
+const isNavCollapsed = ref(true);
+const route = useRoute();
 
 const toggleNavbar = () => {
-  isNavCollapsed.value = !isNavCollapsed.value
-}
+  isNavCollapsed.value = !isNavCollapsed.value;
+};
 
 const isActive = (path) => {
-  return route.path === path ? 'active' : ''
-}
+  return route.path === path ? "active" : "";
+};
 </script>
 
 <template>
@@ -45,20 +47,23 @@ const isActive = (path) => {
         <li class="nav-item w-50 d-none d-lg-block">
           <form class="form-inline my-2 my-lg-0 d-flex">
             <input
-              class="form-control w-100"
+              class="form-control w-200"
               type="search"
               placeholder="Search"
               aria-label="Search"
             />
-            <button class="btn btn-outline-success ml-2" type="submit">Search</button>
+            <button class="btn btn-outline-success ml-2" type="submit">
+              Search
+            </button>
           </form>
         </li>
-        <div class="navbar-nav d-flex justify-content-between px-5 w-50 w-lg-50">
+        <div
+          class="navbar-nav d-flex justify-content-between px-5 w-50 w-lg-50"
+        >
           <li class="nav-item">
-            <a :class="['nav-link', isActive('/about')]" href="/about">About</a>
-          </li>
-          <li class="nav-item">
-            <a :class="['nav-link', isActive('/resources')]" href="/resources">Resources</a>
+            <a :class="['nav-link', isActive('/resources')]" href="/resources"
+              >Resources</a
+            >
           </li>
           <li class="nav-item dropdown">
             <a
@@ -73,17 +78,38 @@ const isActive = (path) => {
               Consultation
             </a>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" href="/consultation">Therapists</a>
-
+              <a
+                class="dropdown-item"
+                href="/consultation"
+                v-if="authState.accountType == 'normal'"
+                >Therapists</a
+              >
+             
+              <a
+                v-if="authState.accountType == 'support'"
+                class="dropdown-item"
+                href="/management"
+                >Management</a
+              >
+              <div
+                class="dropdown-divider"
+                v-if="authState.accountType == 'normal'"
+              ></div>
+              <a
+                v-if="authState.accountType == 'normal'"
+                class="dropdown-item"
+                href="/map"
+                >Map</a
+              >
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/map">Map</a>
+              <a class="dropdown-item" href="/chat">Email</a>
             </div>
           </li>
+
           <li class="nav-item">
-            <a :class="['nav-link', isActive('/statistic')]" href="/statistic">Data</a>
-          </li>
-          <li class="nav-item">
-            <a :class="['nav-link', isActive('/profile')]" href="/profile">Profile</a>
+            <a :class="['nav-link', isActive('/profile')]" href="/profile"
+              >Profile</a
+            >
           </li>
         </div>
       </ul>

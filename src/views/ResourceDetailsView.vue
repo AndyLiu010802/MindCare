@@ -100,7 +100,7 @@ import { useRoute, useRouter } from 'vue-router'
 import NavbarComponent from '@/components/NavbarComponent.vue'
 import { authState } from '@/store'
 import { db } from '@/firebase'
-import { doc, collection, getDoc, getDocs, setDoc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import StarRate from '@/components/StarRate.vue'
 import explaination from '@/assets/explaination.json'
 const route = useRoute()
@@ -190,71 +190,65 @@ const fetchAverageRating = async (link) => {
   }
 }
 
+
 const fetchRatings = async () => {
   if (!title.value) {
-    console.error('Error: title.value is undefined or empty.')
-    return
+    console.error('Error: title.value is undefined or empty.');
+    return;
   }
 
   try {
-    const docRef = doc(db, 'Rating', title.value)
-    const subCollectionRef = collection(docRef, title.value)
+    const response = await fetch(`https://us-central1-mindcare-4e1aa.cloudfunctions.net/fetchRatings?title=${title.value}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    const subCollectionSnapshot = await getDocs(subCollectionRef)
-    const fetchedRatings = []
-
-    for (const docSnap of subCollectionSnapshot.docs) {
-      const ratingData = docSnap.data()
-      let avatarUrl = ''
-      if (ratingData.userId) {
-        let userDocRef = doc(db, 'Users', ratingData.userId)
-        const userDoc = await getDoc(userDocRef)
-        if (!userDoc.exists()) {
-          userDocRef = doc(db, 'Psychologists', ratingData.userId)
-          const psychDoc = await getDoc(userDocRef)
-          if (psychDoc.exists()) {
-            avatarUrl = psychDoc.data().avatarUrl || ''
-          }
-        } else {
-          avatarUrl = userDoc.data().avatarUrl || ''
-        }
-      }
-      ratingData.avatarUrl = avatarUrl
-      fetchedRatings.push(ratingData)
+    if (!response.ok) {
+      throw new Error('Failed to fetch ratings.');
     }
-    ratings.value = fetchedRatings
+
+    const data = await response.json();
+    ratings.value = data.ratings || [];
   } catch (error) {
-    console.error('Error fetching ratings:', error)
+    console.error('Error fetching ratings:', error);
   }
-}
+};
 
 const submitRating = async () => {
   try {
-    const docRef = doc(db, 'Rating', title.value)
+    const response = await fetch(`https://us-central1-mindcare-4e1aa.cloudfunctions.net/submitRating`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: title.value,
+        relatedLink: relatedLink.value,
+        rating: rating.value,
+        username: userName.value,
+        comment: document.getElementById('comment').value,
+        userId: authState.user.uid,
+      }),
+    });
 
-    const subCollectionRef = collection(docRef, title.value)
-    const newDocRef = doc(subCollectionRef)
-    await setDoc(docRef, {
-      title: title.value
-    })
-    await setDoc(newDocRef, {
-      link: relatedLink.value,
-      rating: rating.value,
-      username: userName.value,
-      comment: document.getElementById('comment').value,
-      date: new Date().toISOString(),
-      userId: authState.user.uid
-    })
+    if (!response.ok) {
+      throw new Error('Failed to submit rating.');
+    }
 
-    document.getElementById('comment').value = ''
-    resetRatingValue.value = 0
+    // Clear the input field
+    document.getElementById('comment').value = '';
+    resetRatingValue.value = 0;
 
-    await fetchRatings()
-    await fetchAverageRating(relatedLink.value)
+    // Fetch updated ratings and average rating
+    await fetchRatings();
+    await fetchAverageRating(relatedLink.value);
   } catch (error) {
-    console.error('Error submitting rating:', error)
+    console.error('Error submitting rating:', error);
   }
-}
+};
+
 
 const onRatingSelected = (value) => {
   rating.value = value

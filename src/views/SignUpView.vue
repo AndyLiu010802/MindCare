@@ -12,8 +12,15 @@
                 <img :src="avatarPreview" alt="Avatar Preview" />
               </div>
               <label for="avatar">Profile Image</label>
-              <input type="file" class="form-control" id="avatar" @change="onFileChange" />
-              <div v-if="errors.avatar" class="text-danger">{{ errors.avatar }}</div>
+              <input
+                type="file"
+                class="form-control"
+                id="avatar"
+                @change="onFileChange"
+              />
+              <div v-if="errors.avatar" class="text-danger">
+                {{ errors.avatar }}
+              </div>
             </div>
             <div class="form-group">
               <label for="username">Username</label>
@@ -24,7 +31,9 @@
                 v-model="formData.username"
                 @blur="() => validateUsername(true)"
               />
-              <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
+              <div v-if="errors.username" class="text-danger">
+                {{ errors.username }}
+              </div>
             </div>
             <div class="form-group">
               <label for="email">Email</label>
@@ -35,7 +44,9 @@
                 v-model="formData.email"
                 @blur="() => validateEmail(true)"
               />
-              <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+              <div v-if="errors.email" class="text-danger">
+                {{ errors.email }}
+              </div>
             </div>
             <div class="form-group">
               <label for="password">Password</label>
@@ -46,7 +57,9 @@
                 v-model="formData.password"
                 @blur="() => validatePassword(true)"
               />
-              <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
+              <div v-if="errors.password" class="text-danger">
+                {{ errors.password }}
+              </div>
             </div>
             <div class="form-group">
               <label for="confirmPassword">Confirm Password</label>
@@ -72,14 +85,25 @@
                 <option value="normal">Normal User</option>
                 <option value="support">Mental Health Support</option>
               </select>
-              <div v-if="errors.accountType" class="text-danger">{{ errors.accountType }}</div>
+              <div v-if="errors.accountType" class="text-danger">
+                {{ errors.accountType }}
+              </div>
             </div>
             <div v-if="formData.accountType === 'support'" class="form-group">
               <label for="license">
                 License
-                <span class="tooltip-icon" data-tooltip="Ahpra registration number">?</span>
+                <span
+                  class="tooltip-icon"
+                  data-tooltip="Ahpra registration number"
+                  >?</span
+                >
               </label>
-              <input type="text" class="form-control" id="license" v-model="formData.license" />
+              <input
+                type="text"
+                class="form-control"
+                id="license"
+                v-model="formData.license"
+              />
             </div>
             <div v-if="isLoading" class="loading-overlay">
               <div class="spinner-border text-light" role="status">
@@ -87,7 +111,9 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary my-4 btn-login">Sign Up</button>
+            <button type="submit" class="btn btn-primary my-4 btn-login">
+              Sign Up
+            </button>
           </form>
         </div>
         <div class="col sec-col">
@@ -100,29 +126,36 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth'
-import { doc, setDoc } from 'firebase/firestore'
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import axios from 'axios'
-import NavbarComponent from '@/components/NavbarComponent.vue'
-import FooterComponent from '@/components/FooterComponent.vue'
-import SignUpImg from '@/assets/images/SignUpImg.png'
-import { auth, db, storage } from '@/firebase'
-import { authState } from '@/store'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import {
+  createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import axios from "axios";
+import NavbarComponent from "@/components/NavbarComponent.vue";
+import FooterComponent from "@/components/FooterComponent.vue";
+import SignUpImg from "@/assets/images/SignUpImg.png";
+import { auth, db, storage } from "@/firebase";
+import { authState } from "@/store";
 
-const router = useRouter()
-const isLoading = ref(false)
+const router = useRouter();
+const isLoading = ref(false);
 
 const formData = ref({
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  accountType: 'normal',
-  license: ''
-})
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  accountType: "normal",
+  license: "",
+});
 
 const errors = ref({
   avatar: null,
@@ -130,101 +163,111 @@ const errors = ref({
   email: null,
   password: null,
   confirmPassword: null,
-  accountType: null
-})
+  accountType: null,
+});
 
-const selectedFile = ref(null)
-const avatarPreview = ref(null)
+const selectedFile = ref(null);
+const avatarPreview = ref(null);
 
 // Validation functions
 const validateAvatar = (blur) => {
   if (!selectedFile.value) {
-    if (blur) errors.value.avatar = 'Please select an Profile Image.'
-  } else if (!selectedFile.value.type.startsWith('image/')) {
-    errors.value.avatar = 'Please select a valid image file.'
+    if (blur) errors.value.avatar = "Please select an Profile Image.";
+  } else if (!selectedFile.value.type.startsWith("image/")) {
+    errors.value.avatar = "Please select a valid image file.";
   } else {
-    errors.value.avatar = null
+    errors.value.avatar = null;
   }
-}
+};
 
 const onFileChange = (event) => {
-  selectedFile.value = event.target.files[0]
-  validateAvatar(true)
+  selectedFile.value = event.target.files[0];
+  validateAvatar(true);
 
   if (selectedFile.value) {
-    avatarPreview.value = URL.createObjectURL(selectedFile.value)
+    avatarPreview.value = URL.createObjectURL(selectedFile.value);
   } else {
-    avatarPreview.value = null
+    avatarPreview.value = null;
   }
-}
+};
 
 // Existing validation functions
 const validateEmail = (blur) => {
   if (!formData.value.email) {
-    if (blur) errors.value.email = 'Email cannot be empty'
+    if (blur) errors.value.email = "Email cannot be empty";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) {
-    errors.value.email = 'Invalid email format'
+    errors.value.email = "Invalid email format";
   } else {
-    errors.value.email = null
+    errors.value.email = null;
   }
-}
+};
 
 const validatePassword = (blur) => {
-  const passwordValue = formData.value.password
-  const minLength = 6
-  const hasUppercase = /[A-Z]/.test(passwordValue)
-  const hasLowercase = /[a-z]/.test(passwordValue)
-  const hasNumber = /\d/.test(passwordValue)
-  const hasSpecialChar = /[!@#$%^&*()_+[\]{};':"\\|,.<>/?]+/.test(passwordValue)
+  const passwordValue = formData.value.password;
+  const minLength = 6;
+  const hasUppercase = /[A-Z]/.test(passwordValue);
+  const hasLowercase = /[a-z]/.test(passwordValue);
+  const hasNumber = /\d/.test(passwordValue);
+  const hasSpecialChar = /[!@#$%^&*()_+[\]{};':"\\|,.<>/?]+/.test(
+    passwordValue
+  );
 
   if (passwordValue.length < minLength) {
-    if (blur) errors.value.password = `Password must be at least ${minLength} characters long.`
+    if (blur)
+      errors.value.password = `Password must be at least ${minLength} characters long.`;
   } else if (!hasUppercase) {
-    if (blur) errors.value.password = 'Password must contain at least one uppercase letter.'
+    if (blur)
+      errors.value.password =
+        "Password must contain at least one uppercase letter.";
   } else if (!hasLowercase) {
-    if (blur) errors.value.password = 'Password must contain at least one lowercase letter.'
+    if (blur)
+      errors.value.password =
+        "Password must contain at least one lowercase letter.";
   } else if (!hasNumber) {
-    if (blur) errors.value.password = 'Password must contain at least one number.'
+    if (blur)
+      errors.value.password = "Password must contain at least one number.";
   } else if (!hasSpecialChar) {
-    if (blur) errors.value.password = 'Password must contain at least one special character.'
+    if (blur)
+      errors.value.password =
+        "Password must contain at least one special character.";
   } else {
-    errors.value.password = null
+    errors.value.password = null;
   }
-}
+};
 
 const validateConfirmPassword = (blur) => {
   if (!formData.value.confirmPassword) {
-    if (blur) errors.value.confirmPassword = 'Confirm password cannot be empty'
+    if (blur) errors.value.confirmPassword = "Confirm password cannot be empty";
   } else if (formData.value.password !== formData.value.confirmPassword) {
-    if (blur) errors.value.confirmPassword = 'Passwords do not match'
+    if (blur) errors.value.confirmPassword = "Passwords do not match";
   } else {
-    errors.value.confirmPassword = null
+    errors.value.confirmPassword = null;
   }
-}
+};
 
 const validateUsername = (blur) => {
   if (!formData.value.username) {
-    if (blur) errors.value.username = 'Username cannot be empty'
+    if (blur) errors.value.username = "Username cannot be empty";
   } else {
-    errors.value.username = null
+    errors.value.username = null;
   }
-}
+};
 
 const validateAccountType = (blur) => {
   if (!formData.value.accountType) {
-    if (blur) errors.value.accountType = 'Account type cannot be empty'
+    if (blur) errors.value.accountType = "Account type cannot be empty";
   } else {
-    errors.value.accountType = null
+    errors.value.accountType = null;
   }
-}
+};
 
 const submitForm = async () => {
-  validateAvatar(true)
-  validateEmail(true)
-  validatePassword(true)
-  validateConfirmPassword(true)
-  validateUsername(true)
-  validateAccountType(true)
+  validateAvatar(true);
+  validateEmail(true);
+  validatePassword(true);
+  validateConfirmPassword(true);
+  validateUsername(true);
+  validateAccountType(true);
 
   if (
     !errors.value.avatar &&
@@ -235,74 +278,77 @@ const submitForm = async () => {
     !errors.value.accountType
   ) {
     try {
-      isLoading.value = true
+      isLoading.value = true;
 
-      const signInMethods = await fetchSignInMethodsForEmail(auth, formData.value.email)
+      const signInMethods = await fetchSignInMethodsForEmail(
+        auth,
+        formData.value.email
+      );
       if (signInMethods.length > 0) {
-        alert('This email is already in use. Please use a different email.')
-        return
+        alert("This email is already in use. Please use a different email.");
+        return;
       }
 
-      if (formData.value.accountType === 'normal') {
+      if (formData.value.accountType === "normal") {
         // Create the user account
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           formData.value.email,
           formData.value.password
-        )
-        const user = userCredential.user
+        );
+        const user = userCredential.user;
 
         // Upload avatar image to Firebase Storage
-        let avatarUrl = null
+        let avatarUrl = null;
         if (selectedFile.value) {
           const storageReference = storageRef(
             storage,
             `avatars/${user.uid}/${selectedFile.value.name}`
-          )
-          await uploadBytes(storageReference, selectedFile.value)
-          avatarUrl = await getDownloadURL(storageReference)
+          );
+          await uploadBytes(storageReference, selectedFile.value);
+          avatarUrl = await getDownloadURL(storageReference);
         }
 
         // Store user data in Firestore
-        await setDoc(doc(db, 'Users', user.uid), {
+        await setDoc(doc(db, "Users", user.uid), {
           username: formData.value.username,
           email: formData.value.email,
           accountType: formData.value.accountType,
-          avatarUrl: avatarUrl
-        })
+          avatarUrl: avatarUrl,
+        });
 
         // Update authState and navigate to home
-        authState.user = user
-        authState.isAuthenticated = true
-        authState.accountType = formData.value.accountType
-        clearForm()
-        router.push({ name: 'home' })
+        authState.user = user;
+        authState.isAuthenticated = true;
+        authState.accountType = formData.value.accountType;
+        clearForm();
+        router.push({ name: "home" });
       } else {
-        await checkLicense()
+        await checkLicense();
       }
     } catch (error) {
-      alert('There was an error creating the account. Please try again.')
+      alert("There was an error creating the account. Please try again.");
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
-}
+};
 
 const clearForm = () => {
-  formData.value.username = ''
-  formData.value.email = ''
-  formData.value.password = ''
-  formData.value.confirmPassword = ''
-  formData.value.accountType = 'normal'
-  formData.value.license = ''
-  selectedFile.value = null
-}
+  formData.value.username = "";
+  formData.value.email = "";
+  formData.value.password = "";
+  formData.value.confirmPassword = "";
+  formData.value.accountType = "normal";
+  formData.value.license = "";
+  selectedFile.value = null;
+};
 
 // Check if the license number is valid
 const checkLicense = async () => {
   if (!formData.value.license) {
-    alert('Please enter a license number.')
-    return
+    alert("Please enter a license number.");
+    return;
   }
 
   try {
@@ -331,93 +377,94 @@ const checkLicense = async () => {
           </ns1:FindRegistrations>
         </soap:Body>
       </soap:Envelope>
-    `
+    `;
 
     const response = await axios.post(
-      '/api/pie/svc/PractitionerRegistrationSearch/2.0.0/FindRegistrationService.svc',
+      "/api/pie/svc/PractitionerRegistrationSearch/2.0.0/FindRegistrationService.svc",
       soapRequest,
       {
         headers: {
-          'Content-Type': 'application/soap+xml; charset=utf-8'
-        }
+          "Content-Type": "application/soap+xml; charset=utf-8",
+        },
       }
-    )
+    );
 
-    const parser = new DOMParser()
-    const xmlDoc = parser.parseFromString(response.data, 'text/xml')
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(response.data, "text/xml");
 
-    const professionElement = xmlDoc.getElementsByTagName('Profession')[0]
-    const registrationToDateElement = xmlDoc.getElementsByTagName('RegistrationToDate')[0]
+    const professionElement = xmlDoc.getElementsByTagName("Profession")[0];
+    const registrationToDateElement =
+      xmlDoc.getElementsByTagName("RegistrationToDate")[0];
 
     if (!professionElement || !registrationToDateElement) {
-      alert('Unable to retrieve necessary data from the response.')
-      return
+      alert("Unable to retrieve necessary data from the response.");
+      return;
     }
 
-    const profession = professionElement.textContent
-    const registrationToDate = registrationToDateElement.textContent
-    const currentDate = new Date()
-    const expiryDate = new Date(registrationToDate)
+    const profession = professionElement.textContent;
+    const registrationToDate = registrationToDateElement.textContent;
+    const currentDate = new Date();
+    const expiryDate = new Date(registrationToDate);
 
-    if (profession.includes('Psychologist')) {
+    if (profession.includes("Psychologist")) {
       if (expiryDate >= currentDate) {
         // Create the user account
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           formData.value.email,
           formData.value.password
-        )
-        const user = userCredential.user
+        );
+        const user = userCredential.user;
 
         // Upload avatar image to Firebase Storage
-        let avatarUrl = null
+        let avatarUrl = null;
         if (selectedFile.value) {
           const storageReference = storageRef(
             storage,
             `avatars/${user.uid}/${selectedFile.value.name}`
-          )
-          await uploadBytes(storageReference, selectedFile.value)
-          avatarUrl = await getDownloadURL(storageReference)
+          );
+          await uploadBytes(storageReference, selectedFile.value);
+          avatarUrl = await getDownloadURL(storageReference);
         }
 
         // Store data in 'Psychologists' collection
-        await setDoc(doc(db, 'Psychologists', user.uid), {
+        await setDoc(doc(db, "Psychologists", user.uid), {
           username: formData.value.username,
           email: formData.value.email,
           accountType: formData.value.accountType,
           license: formData.value.license,
-          avatarUrl: avatarUrl
-        })
+          avatarUrl: avatarUrl,
+        });
 
         // Also store data in 'Users' collection
-        await setDoc(doc(db, 'Users', user.uid), {
+        await setDoc(doc(db, "Users", user.uid), {
           username: formData.value.username,
           email: formData.value.email,
-          accountType: 'normal',
-          avatarUrl: avatarUrl
-        })
+          accountType: "normal",
+          avatarUrl: avatarUrl,
+        });
 
-        authState.user = user
-        authState.isAuthenticated = true
-        authState.accountType = formData.value.accountType
-        clearForm()
-        router.push({ name: 'home' })
+        authState.user = user;
+        authState.isAuthenticated = true;
+        authState.accountType = formData.value.accountType;
+        clearForm();
+        router.push({ name: "home" });
       } else {
         alert(
-          'The license is valid and the profession is Psychologist, but the registration has expired.'
-        )
+          "The license is valid and the profession is Psychologist, but the registration has expired."
+        );
       }
     } else {
-      alert('The profession associated with this license is not Psychologist.')
+      alert("The profession associated with this license is not Psychologist.");
     }
   } catch (error) {
     alert(
-      'There was an error validating the license. Make sure the license number is correct and email is valid.'
-    )
+      "There was an error validating the license. Make sure the license number is correct and email is valid."
+    );
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
