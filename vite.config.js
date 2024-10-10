@@ -19,5 +19,10 @@ export default defineConfig({
         secure: false
       }
     }
+  },
+  // Add the build configuration
+  build: {
+    outDir: 'dist', 
+    emptyOutDir: true 
   }
 })
