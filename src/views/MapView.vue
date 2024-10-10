@@ -83,5 +83,14 @@ function initializeGeocoder() {
   min-width: 300px;
 }
 
+@media (max-width: 768px) {
+  .mapboxgl-ctrl-geocoder--input{
+    display: none;
+  }
+
+  .mapboxgl-ctrl-geocoder--icon-search {
+    display: none;
+  }
+}
 
 </style>
