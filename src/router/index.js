@@ -64,17 +64,19 @@ router.beforeEach((to, from, next) => {
 
 // Keyboard navigation logic
 document.addEventListener("keydown", (event) => {
-  if (event.key >= 1 && event.key <= 9) {
+  if (event.ctrlKey && event.key >= 1 && event.key <= 9) {
     const routeMap = {
       1: "home",
       2: "resources",
       3: "consultation",
       4: "profile",
       5: "chat",
-      6: "map",
-      7: "signup",
-      8: "management",
+      6: "library",
+      7: "map",
+      8: "signup",
+      9: "management",
     };
+
 
     const routeName = routeMap[event.key];
 
