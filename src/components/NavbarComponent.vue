@@ -101,8 +101,8 @@ const isActive = (path) => {
                 href="/map"
                 >Map</a
               >
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/chat">Email</a>
+              <div v-if="authState.accountType == 'normal' || 'support'" class="dropdown-divider"></div>
+              <a v-if="authState.accountType == 'normal' || 'support'" class="dropdown-item" href="/chat">Email</a>
             </div>
           </li>
 
