@@ -5,7 +5,8 @@ const cors = require("cors")({origin: true});
 admin.initializeApp();
 
 const db = admin.firestore();
-
+const {Storage} = require("@google-cloud/storage");
+const storage = new Storage();
 
 exports.fetchPsychologists = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
@@ -113,3 +114,26 @@ exports.submitRating = functions.https.onRequest((req, res) => {
   });
 });
 
+
+exports.deleteUploadsFolder = functions.pubsub.schedule("every 168 hours")
+    .onRun(async (context) => {
+      const bucketName = process.env.FIREBASE_CONFIG.storageBucket;
+      const bucket = storage.bucket(bucketName);
+      const prefix = "upload/";
+
+      try {
+        const [files] = await bucket.getFiles({prefix});
+
+        if (files.length === 0) {
+          console.log("No files found to delete.");
+          return null;
+        }
+
+        await Promise.all(files.map((file) => file.delete()));
+        console.log("All files in /upload folder deleted successfully.");
+      } catch (error) {
+        console.error("Error deleting files:", error);
+      }
+
+      return null;
+    });
