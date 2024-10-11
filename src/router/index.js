@@ -4,7 +4,6 @@ import ResourcesView from "../views/ResourcesView.vue";
 import ConsultationView from "../views/ConsultationView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import ChatView from "../views/ChatView.vue";
-import LibraryView from "../views/LibraryView.vue";
 import MapView from "../views/MapView.vue";
 import ResourceDetailsView from "../views/ResourceDetailsView.vue";
 import SignUpView from "../views/SignUpView.vue";
@@ -28,7 +27,6 @@ const router = createRouter({
     },
     { path: "/profile", name: "profile", component: ProfileView },
     { path: "/chat", name: "chat", component: ChatView },
-    { path: "/library", name: "library", component: LibraryView },
     { path: "/map", name: "map", component: MapView },
     { path: "/signup", name: "signup", component: SignUpView },
     { path: "/management", name: "management", component: ManagementView },
@@ -53,16 +51,44 @@ router.beforeEach((to, from, next) => {
     supportRoutes.includes(to.name) &&
     authState.accountType !== "support"
   ) {
-    alert("You are not authorized to access this page");
     next({ name: "home" });
   } else if (
     normalRoutes.includes(to.name) &&
     authState.accountType === "support"
   ) {
-    alert("You are not authorized to access this page");
     next({ name: "home" });
   } else {
     next();
+  }
+});
+
+// Keyboard navigation logic
+document.addEventListener("keydown", (event) => {
+  if (event.key >= 1 && event.key <= 9) {
+    const routeMap = {
+      1: "home",
+      2: "resources",
+      3: "consultation",
+      4: "profile",
+      5: "chat",
+      6: "map",
+      7: "signup",
+      8: "management",
+    };
+
+    const routeName = routeMap[event.key];
+
+    if (routeName) {
+      if (
+        (authState.accountType === "normal" && routeName === "management") ||
+        (authState.accountType === "support" &&
+          (routeName === "consultation" || routeName === "map"))
+      ) {
+        return;
+        } else {
+        router.push({ name: routeName });
+      }
+    }
   }
 });
 

@@ -100,7 +100,7 @@ const searchType = ref('title')
 const sortField = ref('title')
 const sortOrder = ref('asc')
 
-const query = 'psychology OR mental health'
+const query = 'psychology'
 const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`
 
 onMounted(async () => {
